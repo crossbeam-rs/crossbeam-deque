@@ -488,16 +488,18 @@ impl<T> Deque<T> {
         // Are we popping the last element from the deque?
         if len == 1 {
             // Try incrementing the top.
-            //
-            // FIXME(jeehoonkang): in fact, `Release` for success and `Acquire` for failure is
-            // enough. But the C11 standard 7.17.7.4 paragraph 2 requires that the success ordering
-            // >= failure ordering: "The failure argument shall be no stronger than the success
-            // argument."
             if self.inner
                 .top
-                .compare_exchange(t, t.wrapping_add(1), Ordering::AcqRel, Ordering::Acquire)
+                .compare_exchange(t, t.wrapping_add(1), Ordering::Release, Ordering::Relaxed)
                 .is_err()
             {
+                // FIXME(jeehoonkang): In fact, it is sufficient to use `Acquire` for the failure
+                // ordering in the CAS above, instead of issuing an `Acquire` fence below. But in
+                // that case, the C11 standard's 7.17.7.4 paragraph 2 requires that the success
+                // ordering be `AcqRel`, presumably degrading the performance: "The failure argument
+                // shall be no stronger than the success argument." In my humble opinion, this is an
+                // unnecessary requirement, and I hope it be lifted in the future.
+                atomic::fence(Ordering::Acquire);
                 // Failed. We didn't pop anything.
                 mem::forget(value.take());
             }
