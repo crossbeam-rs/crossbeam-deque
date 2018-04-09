@@ -1,3 +1,4 @@
+#![feature(ord_max_min)] 
 //! A concurrent work-stealing deque.
 //!
 //! The data structure can be thought of as a dynamically growable and shrinkable buffer that has
