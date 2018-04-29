@@ -82,6 +82,7 @@
 //! [Deque::steal]: struct.Deque.html#method.steal
 //! [Stealer::steal]: struct.Stealer.html#method.steal
 
+#![feature(ord_max_min)]
 extern crate crossbeam_epoch as epoch;
 extern crate crossbeam_utils as utils;
 
