@@ -83,6 +83,11 @@ impl<T> Buffer<T> {
     unsafe fn read(&self, index: isize) -> T {
         ptr::read(self.at(index))
     }
+
+    /// Volatile read from the specified `index`.
+    unsafe fn read_volatile(&self, index: isize) -> T {
+        ptr::read_volatile(self.at(index))
+    }
 }
 
 impl<T> Clone for Buffer<T> {
@@ -261,7 +266,7 @@ impl<T> Worker<T> {
         } else {
             // Read the value to be popped.
             let buffer = self.cached_buffer.get();
-            let mut value = unsafe { Some(buffer.read(b)) };
+            let mut value = unsafe { Some(buffer.read_volatile(b)) };
 
             // Are we popping the last element from the deque?
             if len == 0 {
