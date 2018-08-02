@@ -100,18 +100,18 @@ impl<T> Buffer<T> {
         (*slot).stamp.store(index, ord);
     }
 
-    /// Reads a value from the specified `index`.
-    unsafe fn read(&self, index: isize, ord: Ordering) -> Option<T> {
+    /// Volatile read from the specified `index`.
+    unsafe fn read_volatile(&self, index: isize, ord: Ordering) -> Option<T> {
         let slot = self.at(index);
         if (*slot).stamp.load(ord) == index {
-            Some(ptr::read((*slot).value.get()))
+            Some(ptr::read_volatile((*slot).value.get()))
         } else {
             None
         }
     }
 
-    /// Reads a value from the specified `index`.
-    unsafe fn read_unchecked(&self, index: isize) -> T {
+    /// Volatile read from the specified `index` without stamp checking.
+    unsafe fn read_volatile_unchecked(&self, index: isize) -> T {
         let slot = self.at(index);
         ptr::read((*slot).value.get())
     }
@@ -297,7 +297,7 @@ impl<T> Worker<T> {
                 unsafe {
                     // Read the value to be popped.
                     let buffer = self.cached_buffer.get();
-                    let data = buffer.read_unchecked(f);
+                    let data = buffer.read_volatile_unchecked(f);
 
                     // Shrink the buffer if `len - 1` is less than one fourth of the capacity.
                     if buffer.cap > MIN_CAP && len <= buffer.cap as isize / 4 {
@@ -367,7 +367,7 @@ impl<T> Stealer<T> {
             let buffer = self.inner.buffer.load(Ordering::Acquire, guard);
 
             // Read the value at the front.
-            let value = unsafe { buffer.deref().read(f, Ordering::Acquire)? };
+            let value = unsafe { buffer.deref().read_volatile(f, Ordering::Acquire)? };
 
             // Try incrementing the front index to steal the value.
             if self.inner
