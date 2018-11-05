@@ -1,3 +1,7 @@
+## NOTE: This crate has been moved into the [crossbeam](https://github.com/crossbeam-rs/crossbeam) repository.
+
+Do not use this repository.
+
 # Concurrent work-stealing deque
 
 [![Build Status](https://travis-ci.org/crossbeam-rs/crossbeam-deque.svg?branch=master)](https://travis-ci.org/crossbeam-rs/crossbeam-deque)
